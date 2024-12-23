@@ -1,0 +1,65 @@
+name: Build and Deploy Qt Project with Submodules (MSVC 2022)
+
+on:
+  push:
+    branches:
+      - main  # 或其他分支
+  pull_request:
+    branches:
+      - main  # 或其他分支
+
+jobs:
+  build:
+    runs-on: windows-latest  # 使用 Windows 环境
+
+    steps:
+      # 获取代码并初始化子模块
+      - name: Checkout code and submodules
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive  # 确保也获取子模块
+
+      # 设置 MSVC 2022 编译环境
+      - name: Set up MSVC 2022
+        uses: microsoft/setup-msbuild@v1
+        with:
+          vs-version: '2022'  # 设置 MSVC 版本为 2022
+
+      # 安装 Qt 6.8.1
+      - name: Install Qt 6.8.1
+        uses: jurplel/install-qt-action@v1
+        with:
+          version: '6.8.1'  # 指定 Qt 版本
+          host: 'windows'   # 使用 Windows 平台
+          components: 'desktop', 'tools', 'extras'
+
+      # 安装 Visual Studio 构建工具（如果没有预安装）
+      - name: Install Visual Studio Build Tools
+        run: |
+          choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"  # 如果需要，可以安装 VS 工具
+
+      # 创建构建目录并运行 qmake
+      - name: Create build directory and run qmake
+        run: |
+          mkdir build
+          cd build
+          qmake ../  # 运行 qmake 生成 Makefile
+
+      # 使用 MSVC 编译 Qt 项目
+      - name: Build the project
+        run: |
+          cd build
+          msbuild my_project.pro -p:Configuration=Release  # 使用 MSVC 构建项目（替换 `my_project.pro` 为你的项目文件名）
+
+      # 测试（可选）
+      - name: Run tests
+        run: |
+          cd build
+          .\test_executable.exe  # 如果有测试，执行测试
+
+      # 发布：上传构建产物
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: qt-build-artifacts
+          path: build/  # 指定构建目录
