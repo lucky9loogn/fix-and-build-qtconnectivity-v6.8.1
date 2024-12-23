@@ -31,9 +31,12 @@ jobs:
         with:
           version: '6.8.1'  # 指定 Qt 版本
           host: 'windows'   # 使用 Windows 平台
-          components: 'desktop', 'tools', 'extras'
+          components: 
+            - 'desktop'
+            - 'tools'
+            - 'extras'
 
-      # 安装 Visual Studio 构建工具（如果没有预安装）
+      # 安装 Visual Studio Build Tools（如果没有预安装）
       - name: Install Visual Studio Build Tools
         run: |
           choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"  # 如果需要，可以安装 VS 工具
@@ -43,13 +46,13 @@ jobs:
         run: |
           mkdir build
           cd build
-          qmake ../  # 运行 qmake 生成 Makefile
+          qmake ..  # 运行 qmake 生成 Makefile
 
       # 使用 MSVC 编译 Qt 项目
       - name: Build the project
         run: |
           cd build
-          msbuild my_project.pro -p:Configuration=Release  # 使用 MSVC 构建项目（替换 `my_project.pro` 为你的项目文件名）
+          nmake  # 使用 nmake 来编译项目，适用于 Qt 项目
 
       # 测试（可选）
       - name: Run tests
