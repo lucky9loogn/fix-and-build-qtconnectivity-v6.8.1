@@ -58,7 +58,7 @@ jobs:
           mkdir build
           cd build
           cmake -DCMAKE_MESSAGE_LOG_LEVEL=STATUS -DCMAKE_PREFIX_PATH=D:\a\FluentUI\Qt\${{ matrix.qt_ver }}\msvc2022_64 -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release -GNinja ..
-          cmake --build . --target all --config Release --parallel
+          cmake --build . --target Bluetooth --config Release --parallel
           echo winSdkDir=%WindowsSdkDir% >> %GITHUB_ENV%
           echo winSdkVer=%WindowsSdkVersion% >> %GITHUB_ENV%
           echo vcToolsInstallDir=%VCToolsInstallDir% >> %GITHUB_ENV%
