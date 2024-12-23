@@ -80,13 +80,7 @@ jobs:
         with:
           name: ${{ env.packageName }}
           path: dist
-          
-      - name: inno setup install
-        if: startsWith(github.event.ref, 'refs/tags/')
-        uses: zhuzichu520/inno-setup-action@v1.0.1
-        with:
-          filepath: ./package/InstallerScript.iss
-          
+
       - name: uploadRelease
         if: startsWith(github.event.ref, 'refs/tags/')
         uses: svenstaro/upload-release-action@v2
