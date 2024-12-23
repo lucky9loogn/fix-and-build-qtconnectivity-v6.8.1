@@ -1,3 +1,5 @@
+# reference: https://github.com/zhuzichu520/FluentUI/blob/main/.github/workflows/windows.yml
+
 name: Windows
 
 on:
@@ -17,6 +19,9 @@ jobs:
             qt_arch: win64_msvc2022_64
             msvc_arch: x64
             qt_arch_install: msvc2022_64  
+
+    env:
+      targetName: Qt6Bluetooth.dll
 
     steps:
       - name: Check out repository
@@ -42,7 +47,7 @@ jobs:
           arch: ${{ matrix.qt_arch }}
           cache: ${{steps.cache-qt.outputs.cache-hit}}
           
-      - name: msvc-build
+      - name: Build QtConnectivity/Bluetooth
         id: build
         shell: cmd
         run: |
@@ -56,15 +61,15 @@ jobs:
            
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.packageName }}
-          path: dist\${{ matrix.qt_ver }}
+          name: ${{ env.targetName }}
+          path: dist
 
-      - name: uploadRelease
+      - name: Upload release
         if: startsWith(github.event.ref, 'refs/tags/')
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ./Qt6Bluetooth.dll
-          asset_name: Qt6Bluetooth.dll
+          file: ${{ env.targetName }}
+          asset_name: ${{ env.targetName }}
           tag: ${{ github.ref }}
           overwrite: true
