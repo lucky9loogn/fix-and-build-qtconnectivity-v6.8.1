@@ -1,13 +1,9 @@
 name: Windows
 
-on: 
+on:
   push:
-    paths:
-      - '*.txt'
-      - 'src/**'
-      - 'example/**'
-      - 'scripts/**'
-      - '.github/workflows/build.yml'
+    branches:
+      - main
 
 jobs:
   build:
@@ -57,36 +53,21 @@ jobs:
           ninja --version
           mkdir build
           cd build
-          cmake -DCMAKE_MESSAGE_LOG_LEVEL=STATUS -DCMAKE_PREFIX_PATH=D:\a\FluentUI\Qt\${{ matrix.qt_ver }}\msvc2022_64 -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release -GNinja ..
+          cmake -DCMAKE_PREFIX_PATH=${{steps.cache-qt.outputs.cache-hit}}\${{ matrix.qt_ver }}\${{ matrix.qt_arch_install }} -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release -GNinja ..
           cmake --build . --target Bluetooth --config Release --parallel
-          echo winSdkDir=%WindowsSdkDir% >> %GITHUB_ENV%
-          echo winSdkVer=%WindowsSdkVersion% >> %GITHUB_ENV%
-          echo vcToolsInstallDir=%VCToolsInstallDir% >> %GITHUB_ENV%
-          echo vcToolsRedistDir=%VCToolsRedistDir% >> %GITHUB_ENV%
-          
-      - name: package
-        id: package      
-        env:
-          archiveName: ${{ env.fileName }}-${{ matrix.qt_arch }}-${{ matrix.qt_ver }}
-          msvcArch: ${{ matrix.msvc_arch }}          
-        shell: pwsh
-        run: |
-          & scripts\windows-publish.ps1 ${env:archiveName} ${env:targetName}
-          # Set output to environment
-          $name = ${env:archiveName}
-          echo "packageName=$name" >> $GITHUB_ENV
+          cmake --build . --target Copy-Qt6Bluetooth.dll-to-dist
            
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ env.packageName }}
-          path: dist
+          path: dist\${{ matrix.qt_ver }}
 
       - name: uploadRelease
         if: startsWith(github.event.ref, 'refs/tags/')
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ./package/installer.exe
-          asset_name: ${{ env.fileName }}_${{ github.ref_name }}_${{ matrix.qt_arch }}_Qt${{ matrix.qt_ver }}.exe
+          file: ./Qt6Bluetooth.dll
+          asset_name: Qt6Bluetooth.dll
           tag: ${{ github.ref }}
           overwrite: true
