@@ -1,4 +1,5 @@
 name: Windows
+
 on: 
   push:
     paths:
@@ -7,14 +8,7 @@ on:
       - 'example/**'
       - 'scripts/**'
       - '.github/workflows/windows.yml'
-  pull_request:
-    paths:
-      - '*.txt'
-      - 'example/**'
-      - 'src/**'
-      - 'scripts/**'
-      - '.github/workflows/windows.yml'
-      
+
 jobs:
   build:
     name: Build
@@ -23,10 +17,10 @@ jobs:
       matrix:
         os: [windows-latest]
         include:
-          - qt_ver: 6.8.1        
-            qt_arch: win64_msvc2022_64
+          - qt_ver: 6.6.2        
+            qt_arch: win64_msvc2019_64
             msvc_arch: x64
-            qt_arch_install: msvc2022_64  
+            qt_arch_install: msvc2019_64  
     env:
       targetName: example.exe
       fileName: example
@@ -40,6 +34,12 @@ jobs:
         uses: seanmiddleditch/gha-setup-ninja@master
         with:
           version: 1.10.2
+          
+      - name: Cache Qt
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/qt
+          key: qt-${{ matrix.qt_ver }}-${{ matrix.qt_arch }}
           
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
@@ -57,7 +57,7 @@ jobs:
           ninja --version
           mkdir build
           cd build
-          cmake -DCMAKE_MESSAGE_LOG_LEVEL=STATUS -DCMAKE_PREFIX_PATH=D:\a\FluentUI\Qt\${{ matrix.qt_ver }}\msvc2022_64 -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release -GNinja ..
+          cmake -DCMAKE_MESSAGE_LOG_LEVEL=STATUS -DCMAKE_PREFIX_PATH=D:\a\FluentUI\Qt\${{ matrix.qt_ver }}\msvc2019_64 -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release -GNinja ..
           cmake --build . --target all --config Release --parallel
           echo winSdkDir=%WindowsSdkDir% >> %GITHUB_ENV%
           echo winSdkVer=%WindowsSdkVersion% >> %GITHUB_ENV%
@@ -72,13 +72,13 @@ jobs:
         shell: pwsh
         run: |
           & scripts\windows-publish.ps1 ${env:archiveName} ${env:targetName}
-          # 记录packageName给后续step
-           $name = ${env:archiveName}
-           echo "::set-output name=packageName::$name"     
+          # Set output to environment
+          $name = ${env:archiveName}
+          echo "packageName=$name" >> $GITHUB_ENV
            
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.package.outputs.packageName }}
+          name: ${{ env.packageName }}
           path: dist
           
       - name: inno setup install
@@ -95,4 +95,4 @@ jobs:
           file: ./package/installer.exe
           asset_name: ${{ env.fileName }}_${{ github.ref_name }}_${{ matrix.qt_arch }}_Qt${{ matrix.qt_ver }}.exe
           tag: ${{ github.ref }}
-          overwrite: true 
+          overwrite: true
