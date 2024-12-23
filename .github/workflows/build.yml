@@ -17,9 +17,7 @@ jobs:
             qt_arch: win64_msvc2022_64
             msvc_arch: x64
             qt_arch_install: msvc2022_64  
-    env:
-      targetName: example.exe
-      fileName: example
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
@@ -43,7 +41,6 @@ jobs:
           version: ${{ matrix.qt_ver }}
           arch: ${{ matrix.qt_arch }}
           cache: ${{steps.cache-qt.outputs.cache-hit}}
-          modules: 'qt5compat qtmultimedia qtshadertools qtimageformats qtspeech qt3d'
           
       - name: msvc-build
         id: build
@@ -55,7 +52,6 @@ jobs:
           cd build
           cmake -DCMAKE_PREFIX_PATH=${{steps.cache-qt.outputs.cache-hit}}\${{ matrix.qt_ver }}\${{ matrix.qt_arch_install }} -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release -GNinja ..
           cmake --build . --target Bluetooth --config Release --parallel
-          cmake --build . --target Copy-Qt6Bluetooth.dll-to-dist
            
       - uses: actions/upload-artifact@v4
         with:
