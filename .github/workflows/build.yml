@@ -52,6 +52,7 @@ jobs:
           cd build
           cmake -DCMAKE_PREFIX_PATH=${{steps.cache-qt.outputs.cache-hit}}\${{ matrix.qt_ver }}\${{ matrix.qt_arch_install }} -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release -GNinja ..
           cmake --build . --target Bluetooth --config Release --parallel
+          cmake --build . --target Copy-Qt6Bluetooth.dll-to-dist
            
       - uses: actions/upload-artifact@v4
         with:

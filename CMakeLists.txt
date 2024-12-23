@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 project(build-qtconnectivity)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-dev")
-
 # find_package(Qt6 REQUIRED COMPONENTS Core)
 
 # message(STATUS "Qt Version: ${Qt6_VERSION}")
